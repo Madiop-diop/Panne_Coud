@@ -73,12 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' &&
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' &&
     isset($_POST['agent']) && isset($_POST['details']) &&
-    isset($_POST['idPanne'])) {
+    isset($_POST['idPanne']) && isset($_POST['date_intervention'])) {
 
     $personne_agent = $_POST['agent'];
     $description_action = $_POST['details'];
     $id_chef_atelier = $_SESSION['id_user'];
     $id_panne = $_POST['idPanne'];
+    $date_intervention = $_POST['date_intervention'];
     // Tableau des noms de jours et de mois en français
     $jours = array("dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi");
     $mois = array("", "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre");
@@ -88,10 +89,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' &&
     $numMois = date("n"); // Indice du mois (1 pour janvier, 12 pour décembre)
 
     // Formater la date
-    $date_intervention = $jours[$numJour] . "/" . date("d") . " " . $mois[$numMois] . "/" . date("Y");
+    $date_sys = $jours[$numJour] . "/" . date("d") . " " . $mois[$numMois] . "/" . date("Y");
+
+    // Convertir la date_intervention en timestamp
+    $date_intervention = strtotime($date_intervention);
+
+    // Obtenir les indices du jour et du mois actuels
+    $numJour2 = date("w", $date_intervention); // Indice du jour (0 pour dimanche, 6 pour samedi)
+    $numMois2 = date("n", $date_intervention); // Indice du mois (1 pour janvier, 12 pour décembre)
+
+    // Formater la date
+    $date_formatee = $jours[$numJour2] . " " . date("d", $date_intervention) . " " . $mois[$numMois2] . " " . date("Y", $date_intervention);
+
+    $date_intervention = $date_formatee;
+
     $resultat = "en cours";
 
-    if (enregistrerIntervention($connexion, $date_intervention, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne)) {
+    if (enregistrerIntervention($connexion, $date_intervention, $date_sys, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne)) {
         header('Location: /COUD/panne/profils/dst/listPannes');
         exit();
     } else {

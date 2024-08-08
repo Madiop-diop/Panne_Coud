@@ -66,7 +66,10 @@ function allPannesByUser($connexion, $user_id, $page = 1, $limit = 10) {
 function login($username, $password)
 {
     global $connexion;
-    $users = "SELECT * FROM `utilisateur` where `username`='$username' and `password`='$password'";
+    // Hacher le mot de passe avec SHA-1
+    $hashed_password = sha1($password);
+
+    $users = "SELECT * FROM `utilisateur` where `username`='$username' and `password`='$hashed_password'";
     $info = $connexion->query($users);
     return $info->fetch_assoc();
 }
@@ -496,18 +499,18 @@ function allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search 
 
 // la fonction pour enregistrer des interventions
 
-function enregistrerIntervention($connexion, $date_intervention, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne) {
+function enregistrerIntervention($connexion, $date_intervention, $date_sys, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne) {
     // Requête d'insertion pour ajouter une nouvelle intervention
     $sql = "
-        INSERT INTO Intervention (date_intervention, description_action, resultat, personne_agent, id_chef_atelier, id_panne)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO Intervention (date_intervention, date_sys, description_action, resultat, personne_agent, id_chef_atelier, id_panne)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ";
 
     // Préparer la requête
     $stmt = $connexion->prepare($sql);
 
     // Lier les paramètres
-    $stmt->bind_param('ssssii', $date_intervention, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne);
+    $stmt->bind_param('sssssii', $date_intervention, $date_sys, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne);
 
     // Exécuter la requête
     if ($stmt->execute()) {

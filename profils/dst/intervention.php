@@ -58,6 +58,12 @@ $idp = isset($_GET['idp']) ? (int)$_GET['idp'] : null;
                         </tr>
                         <tr>
                             <td>
+                                <strong>Date Intervention :</strong>
+                                <input type="date" name="date_intervention" required class="form-control"  style="height: 60px;font-size:15px;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 <strong>Details Intervention</strong>
                                 <textarea name="details" required class="form-control" rows="3" style="height: 90px;font-size:15px;background-color: rgba(50, 115, 220, 0.1);"></textarea>
                             </td>

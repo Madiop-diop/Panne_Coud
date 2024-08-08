@@ -45,7 +45,7 @@ $userId = $_SESSION['id_user'];
                 <tr>
                     <td colspan="4">
                         <center>
-                            <strong>VEUILLEZ RENSEIGNER LES CHAMPS</strong>
+                            <strong>VEUILLEZ ENVOYER LA PANNE AU CHEF ATELIER</strong>
                         </center>
                     </td>
                 </tr>
