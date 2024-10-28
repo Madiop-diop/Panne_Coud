@@ -10,8 +10,28 @@ unset($_SESSION['classe']);
 // Sélectionnez les options à partir de la base de données avec une pagination
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
+include('../../activite.php');
 
 $idp = isset($_GET['idp']) ? (int)$_GET['idp'] : null;
+
+$intervention_id = isset($_GET['intervention_id']) ? (int)$_GET['intervention_id'] : null;
+
+$date_intervention = '';
+$description_action = '';
+$personne_agent = '';
+
+if ($intervention_id) {
+    $sql = "SELECT date_intervention, description_action, personne_agent FROM intervention WHERE id = ?";
+    $stmt = $connexion->prepare($sql);
+    $stmt->bind_param('i', $intervention_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $intervention = $result->fetch_assoc();
+    $date_intervention = $intervention['date_intervention'];
+    $date_intervention = DateTime::createFromFormat('d/m/Y', $date_intervention)->format('Y-m-d');
+    $description_action = $intervention['description_action'];
+    $personne_agent = $intervention['personne_agent'];
+}
 
 
 ?>
@@ -20,7 +40,6 @@ $idp = isset($_GET['idp']) ? (int)$_GET['idp'] : null;
 
 <head>
     <meta charset="utf-8" />
-    <title>CAMPUSCOUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../../assets/css/vendor.css" />
     <link rel="stylesheet" href="../../assets/css/main.css" />
@@ -40,7 +59,8 @@ $idp = isset($_GET['idp']) ? (int)$_GET['idp'] : null;
     <?php include('../../head.php'); ?>
     <div class="container" style="width:50%;">
         <div class="contact__form1">
-            <form class="justify-content-center" method="POST" action="../../traitement/traitement" style="font-size: 20px; font-family: 'Times New Roman', Times, serif;">
+            <form class="justify-content-center" method="POST" action="../../traitement/traitement"
+                style="font-size: 20px; font-family: 'Times New Roman', Times, serif;">
                 <tr>
                     <td colspan="4">
                         <center>
@@ -53,25 +73,33 @@ $idp = isset($_GET['idp']) ? (int)$_GET['idp'] : null;
                         <tr>
                             <td>
                                 <strong>Agent Intervenant :</strong>
-                                <input type="text" name="agent" required class="form-control">
+                                <input type="text" name="agent"
+                                    value="<?php echo htmlspecialchars($personne_agent, ENT_QUOTES, 'UTF-8'); ?>"
+                                    required class="form-control">
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <strong>Date Intervention :</strong>
-                                <input type="date" name="date_intervention" required class="form-control"  style="height: 60px;font-size:15px;">
+                                <input type="date" name="date_intervention"
+                                    value="<?php echo htmlspecialchars($date_intervention, ENT_QUOTES, 'UTF-8'); ?>"
+                                    required class="form-control" style="height: 60px;font-size:15px;">
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <strong>Details Intervention</strong>
-                                <textarea name="details" required class="form-control" rows="3" style="height: 90px;font-size:15px;background-color: rgba(50, 115, 220, 0.1);"></textarea>
+                                <textarea name="details" required class="form-control" rows="3"
+                                    style="height: 90px;font-size:15px;background-color: rgba(50, 115, 220, 0.1);"><?php echo htmlspecialchars($description_action, ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </td>
                         </tr>
                     </table>
 
                     <div class="form-field">
-                        <input type="hidden" name="idPanne" value="<?php echo htmlspecialchars($idp, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="idPanne"
+                            value="<?php echo htmlspecialchars($idp, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="intervention_id"
+                            value="<?php echo htmlspecialchars($intervention_id, ENT_QUOTES, 'UTF-8'); ?>">
                         <button type="submit" class="btn--primary"><strong>ENREGISTRER</strong></button>
                         <br><br>
                         <center> <a href="javascript:history.back()">Retour</a> </center>

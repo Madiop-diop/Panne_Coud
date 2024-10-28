@@ -11,7 +11,7 @@ include('traitement/connect.php');
 
 <head>
   <meta charset="utf-8" />
-  <title>CAMPUSCOUD</title>
+  <title>GESCOUD</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/COUD/panne/assets/css/base.css" />
   <link rel="stylesheet" href="assets/css/vendor.css" />
@@ -66,7 +66,7 @@ include('traitement/connect.php');
               <div class="form-field">
                 <button type="submit" class="full-width btn--primary">Se connecter</button>
                 <br><br>
-                <a href='mpo1'>Mot de passe CAMPUSCOUD oublié ?</a> <br>
+                <a href='mpo1'>Mot de passe GESCOUD oublié ?</a> <br>
                 <a href='rc'>Faire une reclamation?</a> <br>
                 <center> <a href='index'>Retour</a> </center>
                 <div class="submit-loader">

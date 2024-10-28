@@ -10,13 +10,13 @@ unset($_SESSION['classe']);
 // Sélectionnez les options à partir de la base de données avec une pagination
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
+include('../../activite.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <title>CAMPUSCOUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../../assets/css/vendor.css" />
     <link rel="stylesheet" href="../../assets/css/main.css" />
@@ -62,9 +62,9 @@ include('../../traitement/requete.php');
                                     <option value="Maçonnerie">Maçonnerie</option>
                                     <option value="Èlectricité">Électricité</option>
                                     <option value="Menuserie_bois">Menuserie_bois</option>
-                                    <option value="Menuserie_allume">Menuserie_allume</option>
+                                    <option value="Menuserie_allume">Menuserie_allu</option>
                                     <option value="Menuserie_metallique">Menuserie_metallique</option>
-                                    <option value="Froiderie">Froiderie</option>
+                                    <option value="Froiderie">Froid</option>
                                     <option value="Peinture">Peinture</option>
                                 </select>
                             </td>

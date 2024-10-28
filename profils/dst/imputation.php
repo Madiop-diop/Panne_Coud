@@ -10,9 +10,33 @@ unset($_SESSION['classe']);
 // Sélectionnez les options à partir de la base de données avec une pagination
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
+include('../../activite.php');
 
 $idPanne = isset($_GET['idPanne']) ? (int)$_GET['idPanne'] : null;
 $userId = $_SESSION['id_user'];
+
+$imputation_id = isset($_GET['imputation_id']) ? (int)$_GET['imputation_id'] : null;
+
+$instruction = '';
+
+// Nettoyer la variable d'instruction
+$clean_instruction = trim($instruction); // Supprime les espaces en début et fin de chaîne
+$clean_instruction = preg_replace('/\s+/', ' ', $clean_instruction); // Remplace les espaces multiples par un seul espace
+
+// Si en mode modification, charger les données de l'observation
+if ($imputation_id) {
+    $sql = "SELECT instruction FROM imputation WHERE id = ?";
+    $stmt = $connexion->prepare($sql);
+    $stmt->bind_param('i', $imputation_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $imputation = $result->fetch_assoc();
+    $instruction = $imputation['instruction'];
+}
+
+// Nettoyer la variable d'instruction
+$clean_instruction = trim($instruction); // Supprime les espaces en début et fin de chaîne
+$clean_instruction = preg_replace('/\s+/', ' ', $clean_instruction); // Remplace les espaces multiples par un seul espace
 
 
 ?>
@@ -54,7 +78,7 @@ $userId = $_SESSION['id_user'];
                         <tr>
                             <td>
                                 <strong>Les Instructions :</strong>
-                                <textarea name="instruction" required class="form-control" rows="3" style="height: 90px;font-size:15px;background-color: rgba(50, 115, 220, 0.1);"></textarea>
+                                <textarea name="instruction" required class="form-control" style="height: 90px;font-size:15px;background-color: rgba(50, 115, 220, 0.1);"><?php echo htmlspecialchars($clean_instruction, ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </td>
                         </tr>
                     </table>
@@ -62,6 +86,7 @@ $userId = $_SESSION['id_user'];
                     <div class="form-field">
                         <input type="hidden" name="idPanne" value="<?php echo htmlspecialchars($idPanne, ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="userId" value="<?php echo htmlspecialchars($userId, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="imputation_id" value="<?php echo htmlspecialchars($imputation_id, ENT_QUOTES, 'UTF-8'); ?>">
                         <button type="submit" class="btn--primary"><strong>ENREGISTRER</strong></button>
                         <br><br>
                         <center> <a href="javascript:history.back()">Retour</a> </center>

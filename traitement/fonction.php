@@ -10,7 +10,7 @@ function connexionBD()
     return $connexion;
 }
 $connexion = connexionBD();
-// Fonction pour obtenir les pannes enregistrées par l'utilisateur connecté
+//####################### Fonction pour obtenir les pannes enregistrées par l'utilisateur connecté ###########################
 function allPannesByUser($connexion, $user_id, $page = 1, $limit = 10) {
     $offset = ($page - 1) * $limit;
 
@@ -19,11 +19,12 @@ function allPannesByUser($connexion, $user_id, $page = 1, $limit = 10) {
         SELECT p.id, p.type_panne, p.date_enregistrement, p.description, p.localisation, p.niveau_urgence,
                i.resultat,i.id AS idIntervention, i.date_intervention, i.description_action, i.personne_agent,
                u.nom, u.profil1,u.profil2,u.prenom, 
-               o.evaluation_qualite,o.id AS idObservation,o.date_observation, o.commentaire_suggestion
+               o.evaluation_qualite,o.id AS idObservation,o.date_observation, o.commentaire_suggestion,m.instruction
         FROM Panne p
         LEFT JOIN Intervention i ON p.id = i.id_panne
         LEFT JOIN Utilisateur u ON p.id_chef_residence = u.id
         LEFT JOIN Observation o ON p.id = o.id_panne
+        LEFT JOIN Imputation m ON p.id = m.id_panne
         WHERE p.id_chef_residence = ?
         ORDER BY 
             (CASE 
@@ -62,22 +63,36 @@ function allPannesByUser($connexion, $user_id, $page = 1, $limit = 10) {
 }
 // ###############       FIN DE LA FONCTION      ####################
 
-// Fonction de connexion dans l'espace utilisateur
+//############## Fonction de connexion dans l'espace utilisateur ############################
 function login($username, $password)
 {
     global $connexion;
+
     // Hacher le mot de passe avec SHA-1
     $hashed_password = sha1($password);
 
-    $users = "SELECT * FROM `utilisateur` where `username`='$username' and `password`='$hashed_password'";
-    $info = $connexion->query($users);
-    return $info->fetch_assoc();
+    // Requête SQL modifiée pour vérifier si l'utilisateur est actif
+    $query = "SELECT * FROM `utilisateur` WHERE `username` = ? AND `password` = ? AND `statut` = 1";
+    
+    // Préparer la requête pour éviter les injections SQL
+    $stmt = $connexion->prepare($query);
+    $stmt->bind_param('ss', $username, $hashed_password);
+    $stmt->execute();
+    
+    // Récupérer les résultats
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    
+    // Fermer la requête
+    $stmt->close();
+    
+    return $user; // Retourne les informations si l'utilisateur est trouvé et actif, sinon retourne null
 }
+
 // ###############       FIN DE LA FONCTION login     ####################
 
 
 // ###############       DEBUT DE LA FONCTION POUR RECHERCHER LES PANNES UTLISATEUR PAR MOTS CLE     ####################
-
 function rechercherPannesParMotCle($connexion, $userId, $searchTerm, $page = 1, $limit = 10) {
     $offset = ($page - 1) * $limit;
     $likeTerm = '%' . $searchTerm . '%';
@@ -157,12 +172,10 @@ function rechercherPannesParMotCle($connexion, $userId, $searchTerm, $page = 1, 
 
     return ['pannes' => $pannes, 'total_count' => $totalCount, 'total_pages' => $totalPages, 'current_page' => $page];
 }
-
 //  #################  FIN DE LA  FONCTION     ##########################
 
 
 //  #################   FONCTION POUR RECUPERER LES DETAILS DE LA PANNE    ##########################
-
 function obtenirPanneParId($connexion, $panneId) {
     $sql = "
         SELECT 
@@ -200,13 +213,10 @@ function obtenirPanneParId($connexion, $panneId) {
     $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
 }
-
-
 //  ################# FIN DE LA  FONCTION  ##########################
 
 
 // ###############       debut DE LA FONCTION insererPanne     ####################
-
 function insertPanne($connexion, $type_panne, $date_enregistrement, $description, $localisation, $niveau_urgence, $id_chef_residence) {
     $sql = "
         INSERT INTO Panne (type_panne, date_enregistrement, description, localisation, niveau_urgence, id_chef_residence)
@@ -220,11 +230,9 @@ function insertPanne($connexion, $type_panne, $date_enregistrement, $description
         return false;
     }
 }
-
 // ###############       FIN DE LA FONCTION insererPanne     ####################
 
-// ###############       DEBUT DE LA FONCTION enregistrerObservation     ####################
-
+// ###############   DEBUT DE LA FONCTION enregistrerObservation   ###########################
 function enregistrerObservation($connexion, $idPanne, $idUtilisateur, $idIntervention, $evaluationQualite, $date_observation, $commentaireSuggestion, $idObservation = null) {
     if ($idObservation) {
         // Mise à jour de l'observation existante
@@ -270,16 +278,7 @@ function enregistrerObservation($connexion, $idPanne, $idUtilisateur, $idInterve
         return false;
     }
 }
-
-
-
-
 // ###############       FIN DE LA FONCTION enregistrerObservation    ####################
-
-
-
-
-
 
 // Fonction pour obtenir les pannes enregistrées par l'utilisateur connecté
 function allPannes1($connexion, $page = 1, $limit = 10, $profil2 = null) {
@@ -377,13 +376,10 @@ function allPannes1($connexion, $page = 1, $limit = 10, $profil2 = null) {
 
     return ['pannes' => $pannes, 'total_count' => $totalCount, 'total_pages' => $totalPages, 'current_page' => $page];
 }
-
-
 // ###############       FIN DE LA FONCTION      ####################
 
 
-// ###############       DEBUT DE LA FONCTION  RECHERCHERPANNES()    ####################
-
+// ###############  DEBUT DE LA FONCTION  RECHERCHERPANNES()  #####################################
 function rechercherPannes($connexion, $profil2 = null, $search = '', $isChefDst = false) {
     // Initialiser la clause WHERE
     $whereClauses = [];
@@ -474,8 +470,9 @@ function rechercherPannes($connexion, $profil2 = null, $search = '', $isChefDst 
     $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
 }
+// ##################    FIN DE LA FONCTION      ####################
 
-
+//######################### DEBUT la fonction pour AllPAnnes() ####################################
 function allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search = '', $isChefDst = false) {
     $offset = ($page - 1) * $limit;
 
@@ -491,39 +488,76 @@ function allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search 
 
     return ['pannes' => $pannes, 'total_count' => $totalCount, 'total_pages' => $totalPages, 'current_page' => $page];
 }
-
-
-
-
 // ###############       FIN DE LA FONCTION      ####################
 
-// la fonction pour enregistrer des interventions
+//######################### DEBUT la fonction pour enregistrer des interventions ####################################
+function enregistrerIntervention($connexion, $date_intervention, $description_action, $personne_agent, $date_sys, $resultat, $id_chef_atelier, $id_panne, $intervention_id = null) {
+    if ($intervention_id) {
+        // Requête de mise à jour pour modifier uniquement les champs spécifiés
+        $sql = "
+            UPDATE Intervention
+            SET date_intervention = ?, description_action = ?, personne_agent = ?
+            WHERE id = ?
+        ";
 
-function enregistrerIntervention($connexion, $date_intervention, $date_sys, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne) {
-    // Requête d'insertion pour ajouter une nouvelle intervention
-    $sql = "
-        INSERT INTO Intervention (date_intervention, date_sys, description_action, resultat, personne_agent, id_chef_atelier, id_panne)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ";
+        // Préparer la requête
+        $stmt = $connexion->prepare($sql);
 
-    // Préparer la requête
-    $stmt = $connexion->prepare($sql);
+        // Lier les paramètres
+        $stmt->bind_param('sssi', $date_intervention, $description_action, $personne_agent, $intervention_id);
+    } else {
+        // Requête d'insertion pour ajouter une nouvelle intervention
+        $sql = "
+            INSERT INTO Intervention (date_intervention, date_sys, description_action, resultat, personne_agent, id_chef_atelier, id_panne)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ";
 
-    // Lier les paramètres
-    $stmt->bind_param('sssssii', $date_intervention, $date_sys, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne);
+        // Préparer la requête
+        $stmt = $connexion->prepare($sql);
+
+        // Lier les paramètres
+        $stmt->bind_param('sssssii', $date_intervention, $date_sys, $description_action, $resultat, $personne_agent, $id_chef_atelier, $id_panne);
+    }
 
     // Exécuter la requête
     if ($stmt->execute()) {
-        // Retourner l'ID de l'intervention insérée
-        return $stmt->insert_id;
+        // Retourner l'ID de l'intervention insérée ou mise à jour
+        return $intervention_id ? $intervention_id : $stmt->insert_id;
     } else {
         // En cas d'erreur, retourner false
         return false;
     }
 }
+//######################### FIN la fonction pour enregistrer des interventions ####################################
 
-function enregistrerImputation($connexion, $idPanne, $idChefDst, $instruction, $resultat, $dateImputation) {
-    
+//************************************************************************************************************** */
+
+//######################### DEBUT la fonction pour enregistrer des Imputation ####################################
+function enregistrerImputation($connexion, $idPanne, $idChefDst, $instruction, $resultat, $dateImputation, $imputationId = null) {
+    if ($imputationId != null) {
+        // Préparer la requête de mise à jour pour le champ instruction uniquement
+        $sql = "UPDATE Imputation SET instruction = ? WHERE id = ?";
+
+        // Préparer la requête
+        $stmt = $connexion->prepare($sql);
+
+        // Vérifier si la préparation de la requête a échoué
+        if ($stmt === false) {
+            throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
+        }
+
+        // Lier les paramètres
+        $stmt->bind_param('si', $instruction, $imputationId);
+
+        // Exécuter la requête
+        if ($stmt->execute() === false) {
+            throw new Exception('Échec de l\'exécution de la requête : ' . $stmt->error);
+        }
+
+        // Fermer la requête
+        $stmt->close();
+        return true;
+    } 
 
     // Préparer la requête d'insertion
     $sql = "INSERT INTO Imputation (id_panne, id_chef_dst, instruction, resultat, date_imputation) VALUES (?, ?, ?, ?, ?)";
@@ -533,11 +567,39 @@ function enregistrerImputation($connexion, $idPanne, $idChefDst, $instruction, $
 
     // Vérifier si la préparation de la requête a échoué
     if ($stmt === false) {
-        throw new Exception('Failed to prepare statement: ' . $connexion->error);
+        throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
     }
 
     // Lier les paramètres
     $stmt->bind_param('iisss', $idPanne, $idChefDst, $instruction, $resultat, $dateImputation);
+
+    // Exécuter la requête
+    if ($stmt->execute() === false) {
+        throw new Exception('Échec de l\'exécution de la requête : ' . $stmt->error);
+    }
+
+    // Fermer la requête
+    $stmt->close();
+
+    return true; // Retourner vrai si l'insertion a réussi
+}
+//######################### FIN la fonction pour enregistrer des Imputation ####################################
+
+// ####################### supprimer imputation ######################################################
+function supprimerImputation($connexion, $idImputation) {
+    // Préparer la requête de suppression
+    $sql = "DELETE FROM Imputation WHERE id_imputation = ?";
+
+    // Préparer la requête
+    $stmt = $connexion->prepare($sql);
+
+    // Vérifier si la préparation de la requête a échoué
+    if ($stmt === false) {
+        throw new Exception('Failed to prepare statement: ' . $connexion->error);
+    }
+
+    // Lier le paramètre
+    $stmt->bind_param('i', $idImputation);
 
     // Exécuter la requête
     if ($stmt->execute() === false) {
@@ -547,5 +609,142 @@ function enregistrerImputation($connexion, $idPanne, $idChefDst, $instruction, $
     // Fermer la requête
     $stmt->close();
 
-    return true; // Retourner vrai si l'insertion a réussi
+    return true; // Retourner vrai si la suppression a réussi
+}
+// ####################### Fin supprimer imputation ######################################################
+
+// Fonction pour obtenir tous les utilisateurs avec pagination
+function allUtilisateurs($connexion) {
+    // Requête pour récupérer tous les utilisateurs
+    $sql = "
+        SELECT id, username, statut, email, telephone, nom, prenom, profil1, profil2
+        FROM Utilisateur
+    ";
+
+    // Préparer la requête
+    $stmt = $connexion->prepare($sql);
+
+    // Vérifier si la préparation de la requête a échoué
+    if ($stmt === false) {
+        throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
+    }
+
+    // Exécuter la requête
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    // Récupérer tous les utilisateurs dans un tableau associatif
+    $utilisateurs = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Fermer la requête
+    $stmt->close();
+
+    // Retourner la liste des utilisateurs
+    return $utilisateurs;
+}
+
+
+function enregistrerUtilisateur($connexion, $username, $nom, $prenom, $email, $telephone, $motDePasse, $profil1, $profil2) {
+    // Vérifier si l'utilisateur existe déjà par email
+    $sqlCheck = "SELECT COUNT(*) AS count FROM Utilisateur WHERE email = ?";
+    $stmtCheck = $connexion->prepare($sqlCheck);
+
+    if ($stmtCheck === false) {
+        throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
+    }
+
+    // Lier le paramètre email
+    $stmtCheck->bind_param('s', $email);
+    $stmtCheck->execute();
+    $resultCheck = $stmtCheck->get_result();
+    $rowCheck = $resultCheck->fetch_assoc();
+
+    // Si l'utilisateur existe déjà, retourner une erreur
+    if ($rowCheck['count'] > 0) {
+        throw new Exception("L'utilisateur avec cet email existe déjà.");
+    }
+
+    // Fermer la requête de vérification
+    $stmtCheck->close();
+
+    // Hacher le mot de passe avec SHA-1
+    $motDePasseHashe = sha1($motDePasse);
+
+    // Requête d'insertion pour créer un nouvel utilisateur
+    $sql = "INSERT INTO Utilisateur (username, nom, prenom, email, telephone, password, profil1, profil2) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $connexion->prepare($sql);
+
+    if ($stmt === false) {
+        throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
+    }
+
+    // Lier les paramètres
+    $stmt->bind_param('ssssssss',$username, $nom, $prenom, $email, $telephone, $motDePasseHashe, $profil1, $profil2);
+
+    // Exécuter la requête
+    if ($stmt->execute() === false) {
+        throw new Exception('Échec de l\'exécution de la requête : ' . $stmt->error);
+    }
+
+    // Fermer la requête
+    $stmt->close();
+    
+    return true;
+}
+// Fonction pour modifier un Utilisateur
+function updateUtilisateur($connexion, $id, $username, $nom, $prenom, $email, $telephone, $motDePasse = null, $profil1, $profil2) {
+    // Vérifier si l'email existe déjà pour un autre utilisateur
+    $sqlCheck = "SELECT COUNT(*) AS count FROM Utilisateur WHERE email = ? AND id != ?";
+    $stmtCheck = $connexion->prepare($sqlCheck);
+
+    if ($stmtCheck === false) {
+        throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
+    }
+
+    // Lier les paramètres email et id
+    $stmtCheck->bind_param('si', $email, $id);
+    $stmtCheck->execute();
+    $resultCheck = $stmtCheck->get_result();
+    $rowCheck = $resultCheck->fetch_assoc();
+
+    // Si l'email existe déjà pour un autre utilisateur, retourner une erreur
+    if ($rowCheck['count'] > 0) {
+        throw new Exception("Un autre utilisateur avec cet email existe déjà.");
+    }
+
+    // Fermer la requête de vérification
+    $stmtCheck->close();
+
+    // Préparer la requête de mise à jour
+    if ($motDePasse !== null && $motDePasse !== '') {
+        // Si un nouveau mot de passe est fourni, le hacher avec SHA-1
+        $motDePasseHashe = sha1($motDePasse);
+        $sql = "UPDATE Utilisateur SET username = ?, nom = ?, prenom = ?, email = ?, telephone = ?, password = ?, profil1 = ?, profil2 = ? WHERE id = ?";
+    } else {
+        // Si aucun mot de passe n'est fourni, ne pas mettre à jour le champ password
+        $sql = "UPDATE Utilisateur SET username = ?, nom = ?, prenom = ?, email = ?, telephone = ?, profil1 = ?, profil2 = ? WHERE id = ?";
+    }
+
+    $stmt = $connexion->prepare($sql);
+
+    if ($stmt === false) {
+        throw new Exception('Échec de la préparation de la requête : ' . $connexion->error);
+    }
+
+    // Lier les paramètres en fonction de la présence du mot de passe
+    if ($motDePasse !== null && $motDePasse !== '') {
+        $stmt->bind_param('ssssssssi', $username, $nom, $prenom, $email, $telephone, $motDePasseHashe, $profil1, $profil2, $id);
+    } else {
+        $stmt->bind_param('sssssssi', $username, $nom, $prenom, $email, $telephone, $profil1, $profil2, $id);
+    }
+
+    // Exécuter la requête
+    if ($stmt->execute() === false) {
+        throw new Exception('Échec de l\'exécution de la requête : ' . $stmt->error);
+    }
+
+    // Fermer la requête
+    $stmt->close();
+
+    return true;
 }

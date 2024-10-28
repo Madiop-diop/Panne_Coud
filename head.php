@@ -3,6 +3,7 @@ if (empty($_SESSION['username']) && empty($_SESSION['mdp'])) {
   header('Location: /COUD/panne/');
   exit();
 }
+include('activite.php');
 require_once(__DIR__ . '/traitement/fonction.php');
 if ($_SESSION['profil'] == 'user') {
   $inforequeteAffectEtu = getStudentChoiseLit($_SESSION['id_etu']);
@@ -18,7 +19,7 @@ if ($_SESSION['profil'] == 'user') {
 <head>
   <!--- basic page needs================================================== -->
   <meta charset="utf-8" />
-  <title>CAMPUSCOUD</title>
+  <title>GESCOUD</title>
   <meta name="description" content="" />
   <meta name="author" content="" />
 
@@ -44,7 +45,7 @@ if ($_SESSION['profil'] == 'user') {
   <header class="s-header">
     <div class="header-logo">
       <a class="site-logo" href="#"><img src="/COUD/panne/assets/images/logo.png" alt="Homepage" /></a>
-      CAMPUSCOUD
+      GESCOUD
     </div>
     <nav class="header-nav-wrap">
       <ul class="header-nav">
@@ -59,7 +60,7 @@ if ($_SESSION['profil'] == 'user') {
   <!-- end s-header -->
 </body>
 <section id="homedesigne" class="s-homedesigne">
-  <?php if (($_SESSION['profil'] == 'chef_pavillon') || ($_SESSION['profil'] == 'residence')|| ($_SESSION['profil'] == 'dst')|| ($_SESSION['profil'] == 'atelier')|| ($_SESSION['profil'] == 'section')) { ?>
+  <?php if (($_SESSION['profil'] == 'chef_pavillon') || ($_SESSION['profil'] == 'residence')|| ($_SESSION['profil'] == 'dst')|| ($_SESSION['profil'] == 'atelier')|| ($_SESSION['profil'] == 'section') || ($_SESSION['profil'] == 'sem') || ($_SESSION['profil'] == 'admin')) { ?>
     <p class="lead">Espace Administration: Bienvenue! <br> <br> <span>
         (<?= $_SESSION['prenom'] . "  " . $_SESSION['nom'] . " | " . $_SESSION['profil2'] ?>)
       </span></p>

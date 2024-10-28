@@ -8,11 +8,14 @@ unset($_SESSION['classe']);
 
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
-
+include('../../activite.php');
 $userId = $_SESSION['id_user'];
 $profil2 = $_SESSION['profil2'];
+$profil1 = $_SESSION['profil'];
 // Vérifiez le profil et définissez les variables appropriées
-$isChefDst = ($profil2 === 'chef dst');
+$isSEM = ($profil2 === 'S.E.M');
+$isDst = ($profil2 === 'chef dst');
+$dst = ($profil1 === 'dst');
 
 // Nombre de lignes par page
 $limit = 10;
@@ -22,12 +25,12 @@ $search = isset($_GET['search']) ? $_GET['search'] : '';
 
 if ($search) {
     // Recherche par mot-clé dans toutes les colonnes
-    $result = allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search, $isChefDst);
+    $result = allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search, $dst);
     $allPannes = $result['pannes'];
     $totalPannes = $result['total_count'];
     $totalPages = $result['total_pages'];
 } else {
-    $result = allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search, $isChefDst);
+    $result = allPannes($connexion, $page = 1, $limit = 10, $profil2 = null, $search, $dst);
     $allPannes = $result['pannes'];
     $totalPannes = $result['total_count'];
     $totalPages = ceil($totalPannes / $limit);
@@ -39,7 +42,6 @@ if ($search) {
 
 <head>
     <meta charset="utf-8" />
-    <title>CAMPUSCOUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../../assets/css/vendor.css" />
     <link rel="stylesheet" href="../../assets/css/main.css" />
@@ -92,13 +94,19 @@ if ($search) {
             <table class="table table-striped" style="font-size: 20px; font-family: 'Times New Roman', Times, serif;">
                 <thead>
                     <tr>
-                        <th scope="col">N°</th>
-                        <th scope="col">Type_Panne</th>
-                        <th scope="col">Localisation </th>
-                        <th scope="col">Niveau D'Urgence</th>
-                        <th scope="col">Date Panne</th>
-                        <th scope="col">Resultat</th>
-                        <th scope="col">Action</th>
+                        <th scope="col"><b>N°</b></th>
+                        <th scope="col"><b>Type_Panne</b></th>
+                        <th scope="col"><b>Localisation</b></th>
+                        <th scope="col"><b>Niveau D'Urgence</b></th>
+                        <th scope="col"><b>Date Panne</b></th>
+                        <th scope="col"><b>Ètat</b></th>
+                        <th scope="col"><b>Voir</b></th>
+                        <?php if ($_SESSION['profil'] == 'sem' || $_SESSION['profil'] == 'dst') : ?>
+                        <th scope="col"><b>Imputer</b></th>
+                        <?php endif; ?>
+                        <?php if ($_SESSION['profil'] == 'atelier') : ?>
+                        <th scope="col"><b>Intervenir</b></th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -148,34 +156,82 @@ if ($search) {
                                     </svg>
                                 </button>
                             </a>
+                        </td>
+                        <td>
 
-                            <?php if ($isChefDst): ?>
+                            <?php if ($isSEM): ?>
                             <?php if ($panne['resultat_imp'] === 'imputer'): ?>
-                                <button disabled type="button" class="btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor" color="grow"
-                                        class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd"
-                                            d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />
-                                        <path fill-rule="evenodd"
-                                            d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
-                                    </svg>
-                                </button>
+                            <button disabled type="button" class="btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor"
+                                    color="grow" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />
+                                    <path fill-rule="evenodd"
+                                        d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                                </svg>
+                            </button>
                             <?php else: ?>
                             <a href="imputation.php?idPanne=<?php echo htmlspecialchars($panne['id']); ?>">
                                 <button type="button" class="btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor" color="green"
-                                        class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor"
+                                        color="green" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd"
                                             d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />
                                         <path fill-rule="evenodd"
                                             d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
                                     </svg>
                                 </button>
-
                             </a>
                             <?php endif; ?>
                             <?php endif; ?>
 
+                            <?php if ($isDst): ?>
+                            <?php if ($panne['resultat_imp'] === 'imputer'): ?>
+                            <button disabled type="button" class="btn">
+                               <strong style="color:green;"> OUI</strong>
+                            </button>
+                            <?php else: ?>
+                            <button disabled type="button" class="btn">
+                            <strong style="color:red;"> NON</strong>
+                            </button>
+                            <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if($_SESSION['profil'] == 'atelier'):?>
+
+                            <?php if ($panne['resultat'] == 'depanner'): ?>
+                            <button disabled type="button" class="btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor"
+                                    color="grow" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />
+                                    <path fill-rule="evenodd"
+                                        d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                                </svg>
+                            </button>
+                            <?php elseif ($panne['resultat'] == 'en cours'): ?>
+                            <button disabled type="button" class="btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor"
+                                    color="grow" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />
+                                    <path fill-rule="evenodd"
+                                        d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                                </svg>
+                            </button>
+                            <?php else: ?>
+                            <a href="intervention?idp=<?php echo $panne['id']; ?>">
+                                <button type="button" class="btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="25" fill="currentColor"
+                                        color="green" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                            d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />
+                                        <path fill-rule="evenodd"
+                                            d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                                    </svg>
+                                </button>
+                            </a>
+                            <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

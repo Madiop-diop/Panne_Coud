@@ -10,6 +10,7 @@ unset($_SESSION['classe']);
 // Sélectionnez les options à partir de la base de données avec une pagination
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
+include('../../activite.php');
 
 $idp = isset($_GET['idp']) ? (int)$_GET['idp'] : null;
 $idint = isset($_GET['idInt']) ? (int)$_GET['idInt'] : null;
@@ -35,7 +36,6 @@ if ($idObservation) {
 
 <head>
     <meta charset="utf-8" />
-    <title>CAMPUSCOUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../../assets/css/vendor.css" />
     <link rel="stylesheet" href="../../assets/css/main.css" />

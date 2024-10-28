@@ -1,30 +1,29 @@
-<section id="stats" class="s-stats">
-    <div class="row block-1-4 block-tab-1-2 block-mob-full stats">
+<footer>
+    <div class="row">
+        <div class="col-full">
 
-        <div class="col-block stats__col ">
-            <div class="stats__count">
-                7867
+            <div class="footer-logo">
+                <a class="footer-site-logo" href="#0"><img src="/COUD/panne/assets/images/logo.png" alt="Homepage"></a>
             </div>
-            <h4>Nombre de lits</h4>
-        </div>
-        <div class="col-block stats__col">
-            <div class="stats__count">
-                30
-            </div>
-            <h4>Pavillons</h4>
-        </div>
-        <div class="col-block stats__col">
-            <div class="stats__count">
-                3
-            </div>
-            <h4>Nombre de sites</h4>
-        </div>
-        <div class="col-block stats__col">
-            <div class="stats__count">
-                1
-            </div>
-            <h4>Universite</h4>
-        </div>
 
+
+
+        </div>
     </div>
-</section>
+
+    <div class="row footer-bottom">
+
+        <div class="col-twelve">
+            <div class="copyright">
+                <span>©Copyright COUD@2024</span>
+            </div>
+
+            <div class="go-top">
+                <a class="smoothscroll" title="Back to Top" href="#top"><i class="im im-arrow-up"
+                        aria-hidden="true"></i></a>
+            </div>
+        </div>
+
+    </div> <!-- end footer-bottom -->
+
+</footer>

@@ -8,6 +8,7 @@ unset($_SESSION['classe']);
 
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
+include('../../activite.php');
 
 $userId = $_SESSION['id_user'];
 
@@ -36,7 +37,6 @@ if ($search) {
 
 <head>
     <meta charset="utf-8" />
-    <title>CAMPUSCOUD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../../assets/css/vendor.css" />
     <link rel="stylesheet" href="../../assets/css/main.css" />
@@ -97,13 +97,15 @@ if ($search) {
             <table class="table table-striped" style="font-size: 20px; font-family: 'Times New Roman', Times, serif;">
                 <thead>
                     <tr>
-                        <th scope="col">N°</th>
-                        <th scope="col">Type_Panne</th>
-                        <th scope="col">Emplacement</th>
-                        <th scope="col">Niveau D'Urgence</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Resultat</th>
-                        <th scope="col">Action</th>
+                        <th scope="col"><b>N°</b></th>
+                        <th scope="col"><b>Type</b></th>
+                        <th scope="col"><b>Localisation</b></th>
+                        <th scope="col"><b>Niveau D'Urgence</b></th>
+                        <th scope="col"><b>Date</b></th>
+                        <th scope="col"><b>Ètat</b></th>
+                        <th scope="col"><b>Supr</b></th>
+                        <th scope="col"><b>Obs</b></th>
+                        <th scope="col"><b>Voir</b></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,24 +126,19 @@ if ($search) {
                             <button class="btn btn-danger" style="width:40%;height: 30px;">Èlevèe</button>
                             <?php endif; ?>
                         </td>
-                         <td><?php  echo htmlspecialchars($panne['date_enregistrement']);  ?></td> 
+                        <td><?php  echo htmlspecialchars($panne['date_enregistrement']);  ?></td>
                         <td>
                             <?php if ($panne['resultat'] == 'depanner'): ?>
                             <button class="btn btn-success" disabled style="width:60%;height: 30px;">Dépanné</button>
                             <?php elseif ($panne['resultat'] == 'en cours'): ?>
-                            <a
-                                href="observation?idp=<?php echo $panne['id']; ?>&idInt=<?php echo $panne['idIntervention']; ?>&idObservation=<?php echo $panne['idObservation']; ?>">
-                                <button class="btn btn-warning" style="width:60%;height: 30px;"
-                                    data-panne-id="<?php echo $panne['id']; ?>" data-bs-toggle="modal"
-                                    data-bs-target="#exampleModal">en cours...</button>
-                            </a>
+                            <button class="btn btn-warning" style="width:60%;height: 30px;">en cours...</button>
                             <?php else: ?>
                             <button disabled class="btn btn-danger" style="width:60%;height: 30px;">Non
                                 Depanner</button>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if ($panne['resultat'] == 'depanner' || $panne['resultat'] == 'en cours'): ?>
+                            <?php if ($panne['resultat'] == 'depanner' || $panne['resultat'] == 'en cours' || $panne['instruction'] != null ): ?>
                             <button type="button" class="btn" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
                                     class="bi bi-trash-fill" viewBox="0 0 16 16">
@@ -160,7 +157,9 @@ if ($search) {
                                 </svg>
                             </button>
                             <?php endif; ?>
-                            <?php if ($panne['resultat'] == 'depanner'): ?>
+                        </td>
+                        <td>
+                            <?php if ($panne['resultat'] == 'en cours' || $panne['resultat'] == 'depanner'): ?>
                             <a
                                 href="observation?idp=<?php echo $panne['id']; ?>&idInt=<?php echo $panne['idIntervention']; ?>&idObservation=<?php echo $panne['idObservation']; ?>">
                                 <button type="button" class="btn">
@@ -175,7 +174,7 @@ if ($search) {
                             </a>
                             <?php else: ?>
                             <button disabled type="button" class="btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" color="green"
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" color="grow"
                                     fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                     <path
                                         d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
@@ -184,6 +183,8 @@ if ($search) {
                                 </svg>
                             </button>
                             <?php endif; ?>
+                        </td>
+                        <td>
                             <a href="../vuePanne.php?idPanne=<?php echo htmlspecialchars($panne['id']); ?>">
                                 <button type="button" class="btn">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"

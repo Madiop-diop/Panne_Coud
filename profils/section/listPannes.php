@@ -8,6 +8,7 @@ unset($_SESSION['classe']);
 
 include('../../traitement/fonction.php');
 include('../../traitement/requete.php');
+include('../../activite.php');
 
 $userId = $_SESSION['id_user'];
 $profil2 = $_SESSION['profil2'];
@@ -91,13 +92,13 @@ if ($search) {
             <table class="table table-striped" style="font-size: 20px; font-family: 'Times New Roman', Times, serif;">
                 <thead>
                     <tr>
-                        <th scope="col">N°</th>
-                        <th scope="col">Type_Panne</th>
-                        <th scope="col">Localisation </th>
-                        <th scope="col">Niveau D'Urgence</th>
-                        <th scope="col">Date d'Enregistrement</th>
-                        <th scope="col">Resultat</th>
-                        <th scope="col">Action</th>
+                        <th scope="col"><b>N°</b></th>
+                        <th scope="col"><b>Localisation</b></th>
+                        <th scope="col"><b>Niveau D'Urgence</b></th>
+                        <th scope="col"><b>Date Panne</b></th>
+                        <th scope="col"><b>Date Imputation</b></th>
+                        <th scope="col"><b>Rèsultat</b></th>
+                        <th scope="col"><b>Voir</b></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,7 +106,6 @@ if ($search) {
                     <?php foreach ($allPannes as $panne): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($panne['id']); ?></td>
-                        <td><?php echo htmlspecialchars($panne['type_panne']); ?></td>
                         <td><?php echo htmlspecialchars($panne['localisation']); ?></td>
                         <!-- <td><?php// echo htmlspecialchars($panne['description']); ?></td> -->
                         <td>
@@ -119,6 +119,7 @@ if ($search) {
                             <?php endif; ?>
                         </td>
                         <td><?php echo htmlspecialchars($panne['date_enregistrement']); ?></td>
+                        <td><?php echo htmlspecialchars($panne['date_imputation']); ?></td>
                         <td>
                             <?php if ($panne['resultat'] == 'depanner'): ?>
                             <button class="btn btn-success" disabled style="width:60%;height: 30px;">Dépanné</button>
@@ -284,5 +285,6 @@ if ($search) {
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
 </script>
 
+<?php include('../../footer.php'); ?>
 
 </html>

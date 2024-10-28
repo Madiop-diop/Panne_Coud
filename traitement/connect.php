@@ -25,8 +25,14 @@ if (!empty($_GET['username_user']) && !empty($_GET['password_user'])) {
         }else if ($row['profil1'] == 'dst') {
             header('Location: /COUD/panne/profils/dst/listPannes.php');
             exit();
+        }else if ($row['profil1'] == 'sem') {
+            header('Location: /COUD/panne/profils/dst/listPannes.php');
+            exit();
         }else if ($row['profil1'] == 'atelier') {
             header('Location: /COUD/panne/profils/dst/listPannes.php');
+            exit();
+        }else if ($row['profil1'] == 'admin') {
+            header('Location: /COUD/panne/profils/admin/users.php');
             exit();
         }else if ($row['profil1'] == 'section') {
             header('Location: /COUD/panne/profils/section/listPannes.php');
